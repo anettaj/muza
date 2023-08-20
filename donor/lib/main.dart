@@ -13,15 +13,10 @@ class Donar extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor : Color(0xFF1D1C2A),
-        colorScheme: ColorScheme.light(
-          primary:Color(0xFF1b1b26),
-
-        ),
+      theme:ThemeData(
+        scaffoldBackgroundColor: Colors.transparent, // Set the scaffold background to transparent
       ),
-
-      home: Landing_page(),
+      home: LandingPage(),
     );
   }
 }
