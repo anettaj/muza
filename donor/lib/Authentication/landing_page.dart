@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:scaffold_gradient_background/scaffold_gradient_background.dart';
-
+import 'package:donor/Authentication/Components/Landing_page/qoute.dart';
+import 'package:donor/Authentication/Components/Landing_page/discover_text.dart';
+import 'package:donor/Authentication/Components/sizing_components.dart';
+import 'package:donor/Authentication/tearms_page.dart';
 class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Sizing sizing = Sizing(context);
+    // double screenWidth = sizing.setWidth();
+    double screenHeight = sizing.setHeight();
     return ScaffoldGradientBackground(
-      gradient: LinearGradient(
+      gradient: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF1E1D2B),
-          Color(0xFF08080B),
+          Color(0xFF1F1E2C),
+          Color(0xFF030303),
         ],
       ),
       body: Column(
@@ -22,12 +28,12 @@ class LandingPage extends StatelessWidget {
             child: Center(
               child: SvgPicture.asset(
                 'lib/Authentication/Assets/icon.svg',
-                // height: 97.57,
+
               ),
             ),
           ),
 
-          Expanded(
+           Expanded(
             flex: 6,
             child: Stack(
 
@@ -35,46 +41,20 @@ class LandingPage extends StatelessWidget {
               children: [
                 Positioned(
                   left: 20.0,
+
                   child: Image(
                     image: AssetImage('lib/Authentication/Assets/coma_top.png'),
+                    height: screenHeight*0.1,
                   ),
                 ),
 
-                Container(
-                  padding: EdgeInsets.only(top:30.0,left: 65.0,right: 65.0),
-
-                    child:RichText(
-                      textAlign:TextAlign.justify,
-                      text: TextSpan(
-                        text: 'The meaning of life is to find your gift. The purpose of life is to ',
-                        style:TextStyle(
-                          fontSize: 20,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xffFFFFFF),
-
-                        ),
-
-                        children: <TextSpan>[
-                          TextSpan(
-                              text: 'give it away.',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xffFFFFFF),
-                                backgroundColor:Color(0xff37A22E),
-                              ),
-                                ),
-
-                        ],
-                      ),
-                    )
-                ),
+                Quotes(),
                 Positioned(
-                  top: 119.0,
+                  top: screenHeight*0.19,
                   right: 50.0,
                   child: Text(
                     "-Pablo Picasso",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: "Lato",
                       fontSize: 14,
                       fontWeight: FontWeight.w300,
@@ -83,71 +63,53 @@ class LandingPage extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  top: 110.0,
+                  top: screenHeight*0.18,
                   right: 20.0,
                   child: Image(
                     image: AssetImage('lib/Authentication/Assets/coma_bottom.png'),
+                    height: screenHeight*0.1,
                   ),
                 ),
               ],
             ),
           ),
 
-          Expanded(
-            flex: 4,
-            child: Stack(
-              alignment: AlignmentDirectional.center,
-              fit: StackFit.passthrough,
-              children:[
-                Container(
-                padding: EdgeInsets.only(top:5.0,left: 40.0,right: 40.0),
-                child: Text(
-                  "Discover the Joy of Giving",
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xffFFFFFF),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-                Positioned(
-                  top: 80.0,
-                  child: Text(
-                    "Join a Community that's Transforming Lives",
-                    style: const TextStyle(
-                      fontFamily: "Lato",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff4a465d),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-             ],
+          Discovery(),
+          Text(
+            "Join a Community that's Transforming Lives",
+              style: TextStyle(
+              fontFamily: "Lato",
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xff4a465d),
             ),
+            textAlign: TextAlign.center,
           ),
 
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TearmsPage()), // Replace TearmsPage() with the actual name of your terms page
+              );
+            },
             style: ElevatedButton.styleFrom(
-              backgroundColor:Color(0xff37A22E),
+              backgroundColor:const Color(0xff37A22E),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0), // Adjust the radius as needed
               ),
             ),
-            child: Text('Start Donating'),
+            child: const Text('Start Donating'),
           ),
-           SizedBox(
-             height: 50.0,
+            SizedBox(
+             height:screenHeight *0.10,
            ),
 
-           Expanded(
+           const Expanded(
              flex: 1,
              child: Text(
                "© Shere2Care. All rights reserved.",
-               style: const TextStyle(
+               style: TextStyle(
                fontFamily: "Lato",
                fontSize: 12,
                fontWeight: FontWeight.w300,
