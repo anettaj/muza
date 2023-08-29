@@ -1,67 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+
 class VideoPlayerScreen extends StatefulWidget {
+  final String videoUrl;
+
+  VideoPlayerScreen({required this.videoUrl});
+
   @override
   _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _controller;
-  bool _showText = false;
+  String _displayText = ''; // Holds the text to be displayed
+
+  // Fetched text data (Example)
+  Map<int, String> textData = {
+    2: 'Welcome to SJEC',
+    10: 'walk right ahead',
+    20: 'This is the administrative building',
+    // Add more data as needed
+  };
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/simu.mp4')
+    _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
         setState(() {});
       });
 
     _controller.addListener(() {
-      final currentTime = _controller.value.position;
-      if (currentTime >= Duration(seconds: 10) &&
-          currentTime <= Duration(seconds: 15)) {
-        setState(() {
-          _showText = true;
-        });
-      } else {
-        setState(() {
-          _showText = false;
-        });
-      }
+      final currentTime = _controller.value.position.inSeconds;
+
+      // Get text based on the current time
+      _displayText = textData[currentTime] ?? '';
+
+      setState(() {});
     });
   }
 
   void _restartVideo() {
-    _controller.seekTo(Duration.zero); // Reset video to the beginning
-    _controller.play(); // Start playing after reset
+    _controller.seekTo(Duration.zero);
+    _controller.play();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Video Player with Text Overlay')),
+      appBar: AppBar(
+        title: Text("St.Joseph engineering college"),
+        backgroundColor: Colors.green,
+      ),
+      backgroundColor: Colors.black,
       body: Center(
         child: _controller.value.isInitialized
             ? Stack(
           alignment: Alignment.center,
           children: [
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
+            SizedBox(
+              width: screenSize.width,
+              height: screenSize.height,
               child: VideoPlayer(_controller),
             ),
-            if (_showText)
+            if (_displayText.isNotEmpty)
               Positioned(
                 top: 20,
-                child: Center(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'Text Overlay',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
+                child: Container(
+                  color: Colors.black.withOpacity(0.5),
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    _displayText, // Display the fetched text
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
               ),
@@ -101,8 +114,4 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.dispose();
     _controller.dispose();
   }
-}
-
-void main() {
-  runApp(MaterialApp(home: VideoPlayerScreen()));
 }

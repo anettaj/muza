@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:simulation/Simulation/VideoPlayerScreen.dart';
-import 'package:simulation/Simulation/myhome_page.dart';
+import 'package:simulation/Simulation/SplashScreen.dart';
+
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-
       theme: ThemeData(
-
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.green),
         useMaterial3: true,
       ),
-      home: VideoPlayerScreen()
+      home: SplashScreen(),
     );
   }
 }
