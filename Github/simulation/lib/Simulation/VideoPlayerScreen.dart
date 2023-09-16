@@ -5,7 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
-import 'package:simulation/Simulation/location.dart';
+
 
 class VideoPlayerScreen extends StatefulWidget {
   final String videoAssetPath;
@@ -173,9 +173,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           SizedBox(height: 10),
           FloatingActionButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) => Location(), // Navigate to Location.dart
-              )); // Add the action for the new button here
+              ));
             },
             child: Icon(Icons.location_on), // Replace with the desired icon
           ),
