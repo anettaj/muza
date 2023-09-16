@@ -1,143 +1,64 @@
-
 import 'package:flutter/material.dart';
-import 'package:simulation/Simulation/location.dart';
 import 'package:video_player/video_player.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async';
+import 'package:flutter/services.dart';
+import 'package:simulation/Simulation/location.dart';
 
-
-class VideoPlayerScreen extends StatefulWidget {
+class VideoPlayerPage extends StatefulWidget {
   final String videoAssetPath;
+  final String videoTextOption;
 
-  VideoPlayerScreen({required this.videoAssetPath});
+  VideoPlayerPage({required this.videoAssetPath,required this.videoTextOption});
+
 
   @override
-  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
+  _VideoPlayerPageState createState() => _VideoPlayerPageState();
 }
 
-class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late VideoPlayerController _controller;
-  List<Positioned> textPositions = [];
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  Timer? subcollectionTimer;
+class _VideoPlayerPageState extends State<VideoPlayerPage> {
+  late VideoPlayerController _videoController;
 
   @override
   void initState() {
     super.initState();
-    Firebase.initializeApp();
-
-    _controller = VideoPlayerController.asset(widget.videoAssetPath)
+    _videoController = VideoPlayerController.asset(widget.videoAssetPath)
       ..initialize().then((_) {
         setState(() {});
       });
-
-    _controller.addListener(() async {
-      final currentTime = _controller.value.position.inSeconds.toString();
-      print('Current Video Time: $currentTime');
-
-      try {
-        final docSnapshot = await db.collection('textData').doc(currentTime).get();
-
-        if (docSnapshot.exists) {
-          List<Positioned> combinedTextPositions = [];
-
-          // Iterate through subcollections
-          for (int i = 1; true; i++) {
-            final subcollectionName = 'subcollection$i';
-
-            final subcollectionSnapshot =
-            await db.collection('textData').doc(currentTime).collection(subcollectionName).doc('data').get();
-
-            if (subcollectionSnapshot.exists) {
-              final subcollectionData = subcollectionSnapshot.data() as Map<String, dynamic>;
-
-              final subEntranceText = subcollectionData['text'] as String;
-              final subTopValue = (subcollectionData['top'] as num?)?.toDouble() ?? 0.0;
-              final subLeftValue = (subcollectionData['left'] as num?)?.toDouble() ?? 0.0;
-              final subRightValue = (subcollectionData['right'] as num?)?.toDouble() ?? 0.0;
-              print(
-                  'subEntranceText: $subEntranceText, Top: $subTopValue, Left: $subLeftValue, Right: $subRightValue, time:$currentTime');
-
-              final subTextPosition = Positioned(
-                top: subTopValue,
-                left: subLeftValue,
-                right: subRightValue,
-                child: subEntranceText.isNotEmpty
-                    ? Container(
-                  width: 100, // Set an appropriate width
-                  height: 30, // Set an appropriate height
-                  color: Colors.black.withOpacity(0.5),
-                  child: Center(
-                    child: Text(
-                      subEntranceText,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                )
-                    : SizedBox.shrink(),
-              );
-
-              combinedTextPositions.add(subTextPosition);
-            } else {
-              break; // No more subcollections to retrieve
-            }
-          }
-
-          setState(() {
-            textPositions = combinedTextPositions; // Set the combined text positions
-          });
-
-          // Cancel the previous timer when new data is received
-          subcollectionTimer?.cancel();
-
-          // Start a new timer to clear the textPositions after 5 seconds
-          subcollectionTimer = Timer(Duration(seconds: 5), () {
-            setState(() {
-              textPositions = [];
-            });
-          });
-        } else {
-          setState(() {
-            textPositions = []; // Clear the text positions when there's no data
-          });
-        }
-      } catch (e) {
-        print("Error initializing VideoPlayerController: $e");
-      }
-    });
   }
-
   void _restartVideo() {
-    _controller.seekTo(Duration.zero);
-    _controller.play();
+    _videoController.seekTo(Duration.zero); // Seek the video to the beginning
+    _videoController.play(); // Play the video
   }
+
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
+    print('Collection Name: ${widget.videoTextOption}');
     return Scaffold(
       appBar: AppBar(
-        title: Text("St. Joseph Engineering College"),
+        title: Center(child: Text("St. Joseph Engineering College")),
         backgroundColor: Colors.green,
+
       ),
-      backgroundColor: Colors.black,
-      body: Center(
-        child: _controller.value.isInitialized
-            ? Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: screenSize.width,
-              height: screenSize.height,
-              child: VideoPlayer(_controller),
-            ),
-            ...textPositions,
-          ],
-        )
-            : CircularProgressIndicator(),
+      body: Stack(
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: _videoController.value.isInitialized
+                ? AspectRatio(
+              aspectRatio: _videoController.value.aspectRatio,
+              child: VideoPlayer(_videoController),
+            )
+                : CircularProgressIndicator(),
+          ),
+          TextOverlay(
+            subtitleStream: FirebaseFirestore.instance.collection(widget.videoTextOption).snapshots(),
+            videoController: _videoController,
+
+          ),
+        ],
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -145,25 +66,31 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           FloatingActionButton(
             onPressed: () {
               setState(() {
-                if (_controller.value.isPlaying) {
-                  _controller.pause();
+                if (_videoController.value.isPlaying) {
+                  _videoController.pause();
                 } else {
-                  _controller.play();
+                  _videoController.play();
                 }
               });
             },
             child: Icon(
-              _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+              _videoController.value.isPlaying ? Icons.pause : Icons.play_arrow,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(
+            height: 10,
+          ),
           FloatingActionButton(
+            child: Icon(Icons.location_on),
             onPressed: () {
-              // Add the action for rewinding by 5 seconds here
-              final newPosition = _controller.value.position - Duration(seconds: 5);
-              _controller.seekTo(newPosition);
+              // Navigate to the Location page when the button is pressed
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Location(), // Replace with the actual Location widget
+                ),
+              );
             },
-            child: Icon(Icons.replay_5), // Use the appropriate icon
           ),
           SizedBox(height: 10),
           FloatingActionButton(
@@ -171,14 +98,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             child: Icon(Icons.replay),
           ),
           SizedBox(height: 10),
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => Location(), // Navigate to Location.dart
-              ));
-            },
-            child: Icon(Icons.location_on), // Replace with the desired icon
-          ),
         ],
       ),
     );
@@ -187,8 +106,88 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
     super.dispose();
-    Firebase.app().delete();
-    _controller.dispose();
-    subcollectionTimer?.cancel(); // Cancel the timer when disposing the screen
+    _videoController.dispose();
+  }
+}
+
+class TextOverlay extends StatelessWidget {
+  final Stream<QuerySnapshot> subtitleStream;
+  final VideoPlayerController videoController;
+
+  TextOverlay({required this.subtitleStream, required this.videoController});
+
+  Stream<Duration> createPositionStream(VideoPlayerController controller) async* {
+    while (true) {
+      await Future.delayed(Duration(milliseconds: 200)); // Update every 200 milliseconds
+      yield await controller.position ?? Duration.zero;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: subtitleStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container();
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return StreamBuilder<Duration>(
+          stream: createPositionStream(videoController),
+          builder: (context, positionSnapshot) {
+            if (!positionSnapshot.hasData || !videoController.value.isInitialized) {
+              return Container();
+            }
+
+            final currentSecond = positionSnapshot.data!.inSeconds;
+
+            // Find the text and positioning information based on the current second
+            final activeSubtitles = docs.where((doc) {
+              final secondFrom = doc['second_from'] as int;
+              final secondTo = doc['second_to'] as int;
+              return currentSecond >= secondFrom && currentSecond <= secondTo;
+            }).toList();
+
+
+            return Stack(
+              children: activeSubtitles.map((doc) {
+                print(currentSecond);
+                final top = doc['top']?.toDouble() ?? 0.0;
+                final left = doc['left']?.toDouble() ?? 0.0;
+                final right = doc['right']?.toDouble() ?? 0.0;
+                final text = doc['text'].toString();
+                print('Top: $top, Left: $left, Right: $right, TextonTop: $text');
+                final W = MediaQuery.of(context).size.width;
+                final H = MediaQuery.of(context).size.height;
+
+                // Calculate the appropriate positioning using absolute values
+                final position = Positioned(
+                  top: top * H,
+                  left: left * W,
+                  right: right * W,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(8.0),
+                    color: Colors.black.withOpacity(0.6),
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: W*0.0325,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+
+                return position;
+              }).toList(),
+            );
+          },
+        );
+      },
+    );
   }
 }
