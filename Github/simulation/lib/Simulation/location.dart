@@ -57,8 +57,7 @@ class _LocationState extends State<Location> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => VideoPlayerPage(videoAssetPath: videoAssetPath!,videoTextOption: videoTextOption!),
-
+          builder: (context) => VideoPlayerPage(videoAssetPath: videoAssetPath!, videoTextOption: videoTextOption!),
         ),
       );
     } else {
@@ -69,119 +68,125 @@ class _LocationState extends State<Location> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("St. Joseph Engineering College"),
-        backgroundColor: Colors.green,
-      ),
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/1.jpeg'), // Replace with your image asset path
-            fit: BoxFit.cover,
-            opacity: 0.3,
-          ),
+    return WillPopScope(
+      // This callback will prevent the back button from working.
+      onWillPop: () async {
+        // You can add logic here if needed to confirm exit
+        // For example, show a dialog to confirm exit
+        return false; // Prevent going back
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("St. Joseph Engineering College"),
+          backgroundColor: Colors.green,
         ),
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child:Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // "From" Dropdown with Background Image and Opacity
-              Stack(
-                children: [
-                  Opacity(
-                    opacity: 0.7, // Adjust the opacity level as needed
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'From',
-                        filled: true,
-                        fillColor: Colors.white,
+        backgroundColor: Colors.black,
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/1.jpeg'), // Replace with your image asset path
+              fit: BoxFit.cover,
+              opacity: 0.3,
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // "From" Dropdown with Background Image and Opacity
+                Stack(
+                  children: [
+                    Opacity(
+                      opacity: 0.7, // Adjust the opacity level as needed
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'From',
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        value: selectedFrom,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedFrom = newValue;
+                          });
+                        },
+                        items: fromOptions.map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                       ),
-                      value: selectedFrom,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedFrom = newValue;
-                        });
-                      },
-                      items: fromOptions.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.0),
+                  ],
+                ),
+                SizedBox(height: 16.0),
 
-              // "To" Dropdown with Background Image and Opacity
-              Stack(
-                children: [
-                  Opacity(
-                    opacity: 0.7, // Adjust the opacity level as needed
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'To',
-                        filled: true,
-                        fillColor: Colors.white,
+                // "To" Dropdown with Background Image and Opacity
+                Stack(
+                  children: [
+                    Opacity(
+                      opacity: 0.7, // Adjust the opacity level as needed
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'To',
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        value: selectedTo,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedTo = newValue;
+                          });
+                        },
+                        items: toOptions.map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                       ),
-                      value: selectedTo,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedTo = newValue;
-                        });
-                      },
-                      items: toOptions.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
                     ),
-                  ),
+                  ],
+                ),
+                SizedBox(height: 16.0),
 
-                ],
-              ),
-              SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedFrom != null && selectedTo != null) {
+                      await fetchVideoAssetPath(selectedFrom!, selectedTo!);
 
-              ElevatedButton(
-                onPressed: () async {
-                  if (selectedFrom != null && selectedTo != null) {
-                    await fetchVideoAssetPath(selectedFrom!, selectedTo!);
-
-                    if (videoAssetPath != null) {
-                      navigateToVideoPlayerScreen();
-                    } else {
-                      // Handle no video found for the selected destinations.
-                      // You can show an error message to the user.
+                      if (videoAssetPath != null) {
+                        navigateToVideoPlayerScreen();
+                      } else {
+                        // Handle no video found for the selected destinations.
+                        // You can show an error message to the user.
+                      }
                     }
-                  }
-                },
-                child: Text('Submit'),
-              ),
+                  },
+                  child: Text('Submit'),
+                ),
 
-              SizedBox(height: 16.0),
-              if (videoAssetPath != null)
-                Text(
-                  'Video Asset Path: $videoAssetPath',
-                  style: TextStyle(
+                SizedBox(height: 16.0),
+                if (videoAssetPath != null)
+                  Text(
+                    'Video Asset Path: $videoAssetPath',
+                    style: TextStyle(
                       fontSize: 16,
                       color: Colors.cyan,
+                    ),
                   ),
-                ),
-              if (videoAssetPath == null)
-                Text(
-                  'No video found for the selected destinations.',
-                  style: TextStyle(fontSize: 16),
-                ),
-            ],
+                if (videoAssetPath == null)
+                  Text(
+                    'No video found for the selected destinations.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-
     );
   }
 }
