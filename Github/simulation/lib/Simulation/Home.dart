@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
+
 import 'package:simulation/Simulation/location.dart';
 
 class VideoPlayerPage extends StatefulWidget {
