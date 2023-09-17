@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:simulation/Simulation/VideoPlayerScreen.dart';
 import 'package:simulation/Simulation/location.dart';// Replace with your import path
 
 class SplashScreen extends StatefulWidget {
@@ -18,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> initializeAndNavigate() async {
-    final String videoUrl = "asse"; // Replace with your video URL
+
 
     // Simulate a delay before navigating to the video player screen
     await Future.delayed(Duration(seconds: 1));
