@@ -21,7 +21,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
-    _videoController = VideoPlayerController.asset(widget.videoAssetPath)
+    _videoController = VideoPlayerController.network(widget.videoAssetPath)
       ..initialize().then((_) {
         setState(() {});
       });
@@ -96,13 +96,27 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 builder: (context) => Location(), // Navigate to Location.dart
               ));
             },
-            child: Icon(Icons.location_on), // Replace with the desired icon
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on),
+                Text('Destination', style: TextStyle(fontSize: 9.0)),
+
+              ],
+            ), // Replace with the desired icon
           ),
           SizedBox(height: 10),
           FloatingActionButton(
             onPressed: _restartVideo,
-            child: Icon(Icons.replay),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.replay),
+                Text('Replay', style: TextStyle(fontSize: 9.0)),
+              ],
+            ),
           ),
+
           SizedBox(height: 10),
           FloatingActionButton(
             onPressed: _backwardVideo,

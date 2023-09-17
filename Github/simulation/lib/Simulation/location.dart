@@ -33,7 +33,7 @@ class _LocationState extends State<Location> {
         final retrievedVideoFilename = data['videoName'] as String;
         final retrievedVideoText = data['subtitle'] as String;
         setState(() {
-          videoAssetPath = 'assets/video/$retrievedVideoFilename';
+          videoAssetPath = '$retrievedVideoFilename';
           videoTextOption = '$retrievedVideoText';
           print('subtitle:');
           print(videoTextOption);
