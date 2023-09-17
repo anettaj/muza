@@ -3,13 +3,13 @@ import 'package:video_player/video_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:simulation/Simulation/location.dart';
+import 'package:flutter/services.dart'; // Import for SystemChrome
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoAssetPath;
   final String videoTextOption;
 
-  VideoPlayerPage({required this.videoAssetPath,required this.videoTextOption});
-
+  VideoPlayerPage({required this.videoAssetPath, required this.videoTextOption});
 
   @override
   _VideoPlayerPageState createState() => _VideoPlayerPageState();
@@ -21,15 +21,21 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
+
+    // Lock the screen orientation to portrait
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     _videoController = VideoPlayerController.network(widget.videoAssetPath)
       ..initialize().then((_) {
         setState(() {});
       });
   }
+
   void _restartVideo() {
     _videoController.seekTo(Duration.zero); // Seek the video to the beginning
     _videoController.play(); // Play the video
   }
+
   void _forwardVideo() {
     final newPosition = _videoController.value.position + Duration(seconds: 5);
     _videoController.seekTo(newPosition);
@@ -40,8 +46,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _videoController.seekTo(newPosition);
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     print('Collection Name: ${widget.videoTextOption}');
@@ -49,7 +53,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       appBar: AppBar(
         title: Center(child: Text("St. Joseph Engineering College")),
         backgroundColor: Colors.green,
-
       ),
       body: Stack(
         children: [
@@ -66,7 +69,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           TextOverlay(
             subtitleStream: FirebaseFirestore.instance.collection(widget.videoTextOption).snapshots(),
             videoController: _videoController,
-
           ),
         ],
       ),
@@ -101,7 +103,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               children: [
                 Icon(Icons.location_on),
                 Text('Destination', style: TextStyle(fontSize: 9.0)),
-
               ],
             ), // Replace with the desired icon
           ),
@@ -116,7 +117,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               ],
             ),
           ),
-
           SizedBox(height: 10),
           FloatingActionButton(
             onPressed: _backwardVideo,
@@ -130,7 +130,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             child: Icon(Icons.forward_5), // 5-second forward
           ),
           SizedBox(height: 10),
-
         ],
       ),
     );
@@ -140,6 +139,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   void dispose() {
     super.dispose();
     _videoController.dispose();
+
+    // Allow all screen orientations when disposing the widget
+    SystemChrome.setPreferredOrientations([]);
   }
 }
 
@@ -183,7 +185,6 @@ class TextOverlay extends StatelessWidget {
               return currentSecond >= secondFrom && currentSecond <= secondTo;
             }).toList();
 
-
             return Stack(
               children: activeSubtitles.map((doc) {
                 print(currentSecond);
@@ -207,7 +208,7 @@ class TextOverlay extends StatelessWidget {
                     child: Text(
                       text,
                       style: TextStyle(
-                        fontSize: W*0.0325,
+                        fontSize: W * 0.0325,
                         color: Colors.white,
                       ),
                       textAlign: TextAlign.center,

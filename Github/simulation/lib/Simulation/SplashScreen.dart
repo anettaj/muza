@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simulation/Simulation/location.dart';// Replace with your import path
+import 'package:flutter/services.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -13,6 +14,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Call a method to initialize the video URL and navigate after a delay
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     initializeAndNavigate();
   }
 
