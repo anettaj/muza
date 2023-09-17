@@ -30,6 +30,16 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _videoController.seekTo(Duration.zero); // Seek the video to the beginning
     _videoController.play(); // Play the video
   }
+  void _forwardVideo() {
+    final newPosition = _videoController.value.position + Duration(seconds: 5);
+    _videoController.seekTo(newPosition);
+  }
+
+  void _backwardVideo() {
+    final newPosition = _videoController.value.position - Duration(seconds: 5);
+    _videoController.seekTo(newPosition);
+  }
+
 
 
   @override
@@ -81,16 +91,12 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             height: 10,
           ),
           FloatingActionButton(
-            child: Icon(Icons.location_on),
             onPressed: () {
-              // Navigate to the Location page when the button is pressed
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Location(), // Replace with the actual Location widget
-                ),
-              );
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => Location(), // Navigate to Location.dart
+              ));
             },
+            child: Icon(Icons.location_on), // Replace with the desired icon
           ),
           SizedBox(height: 10),
           FloatingActionButton(
@@ -98,6 +104,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             child: Icon(Icons.replay),
           ),
           SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: _backwardVideo,
+            child: Icon(Icons.replay_5), // 5-second backward
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            onPressed: _forwardVideo,
+            child: Icon(Icons.forward_5), // 5-second forward
+          ),
+          SizedBox(height: 10),
+
         ],
       ),
     );
