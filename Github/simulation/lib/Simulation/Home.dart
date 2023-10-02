@@ -27,7 +27,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
     _videoController = VideoPlayerController.network(widget.videoAssetPath)
       ..initialize().then((_) {
-        setState(() {});
+        setState(() {
+          _videoController.play(); // Play the video automatically
+        });
       });
   }
 
@@ -61,11 +63,25 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             height: MediaQuery.of(context).size.height,
             child: _videoController.value.isInitialized
                 ? AspectRatio(
-              aspectRatio: _videoController.value.aspectRatio,
-              child: VideoPlayer(_videoController),
+                  aspectRatio: _videoController.value.aspectRatio,
+                  child: VideoPlayer(_videoController),
             )
-                : CircularProgressIndicator(),
+                : Container(),
           ),
+          if (!_videoController.value.isInitialized)
+            Positioned(
+              top: 0, // Adjust the top position as needed
+              left: 0, // Adjust the left position as needed
+              right: 0, // Adjust the right position as needed
+              bottom: 0, // Adjust the bottom position as needed
+              child: Center(
+                child: Container(
+                  width: 50, // Set the width for the smaller loader
+                  height: 50, // Set the height for the smaller loader
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
           TextOverlay(
             subtitleStream: FirebaseFirestore.instance.collection(widget.videoTextOption).snapshots(),
             videoController: _videoController,
@@ -94,9 +110,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           ),
           FloatingActionButton(
             onPressed: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => Location(), // Navigate to Location.dart
-              ));
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Location(),
+                ),
+                    (route) =>  route.isFirst, // This clears the stack, allowing only the new Location widget
+              );
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:simulation/Simulation/Home.dart';
+import 'package:flutter/services.dart';
 
 class Location extends StatefulWidget {
   const Location({Key? key}) : super(key: key);
@@ -14,13 +15,18 @@ class _LocationState extends State<Location> {
   String? selectedTo;
   String? videoAssetPath;
   String? videoTextOption;
-
+  String? loadingMessage; // Added variable for loading message
+  bool submitted = false; // Added variable to track submission
   final List<String> fromOptions = ['Entrance', 'Administration', 'Church'];
   final List<String> toOptions = ['Administration', 'Student Square', 'Church'];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> fetchVideoAssetPath(String from, String to) async {
+    setState(() {
+      loadingMessage = 'Matching video path...'; // Display loading message
+    });
+
     try {
       final querySnapshot = await _firestore
           .collection('videos')
@@ -35,6 +41,7 @@ class _LocationState extends State<Location> {
         setState(() {
           videoAssetPath = '$retrievedVideoFilename';
           videoTextOption = '$retrievedVideoText';
+          loadingMessage = null; // Clear loading message
           print('subtitle:');
           print(videoTextOption);
           print(videoAssetPath);
@@ -42,27 +49,40 @@ class _LocationState extends State<Location> {
       } else {
         setState(() {
           videoAssetPath = null;
+          loadingMessage = null; // Clear loading message
         });
       }
     } catch (e) {
       print('Error fetching data from Firestore: $e');
       setState(() {
         videoAssetPath = null;
+        loadingMessage = null; // Clear loading message
       });
     }
   }
 
+  void exitApp() {
+    // Exit the app by popping all routes (clearing the navigation stack)
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   void navigateToVideoPlayerScreen() {
     if (videoAssetPath != null) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => VideoPlayerPage(videoAssetPath: videoAssetPath!, videoTextOption: videoTextOption!),
         ),
+        // Define a custom condition to allow going back to the 1st previous page only
+            (route) => route.isFirst,
       );
     } else {
       // Handle no video found for the selected destinations.
       // You can show an error message to the user.
+      setState(() {
+        videoAssetPath = null;
+        loadingMessage = 'Invalid Selection'; // Display "Invalid Selection" message
+      });
     }
   }
 
@@ -73,7 +93,7 @@ class _LocationState extends State<Location> {
       onWillPop: () async {
         // You can add logic here if needed to confirm exit
         // For example, show a dialog to confirm exit
-        return false; // Prevent going back
+        return true; // Prevent going back
       },
       child: Scaffold(
         appBar: AppBar(
@@ -154,6 +174,9 @@ class _LocationState extends State<Location> {
 
                 ElevatedButton(
                   onPressed: () async {
+                    setState(() {
+                      submitted = true; // Mark as submitted when button is pressed
+                    });
                     if (selectedFrom != null && selectedTo != null) {
                       await fetchVideoAssetPath(selectedFrom!, selectedTo!);
 
@@ -162,6 +185,10 @@ class _LocationState extends State<Location> {
                       } else {
                         // Handle no video found for the selected destinations.
                         // You can show an error message to the user.
+                        setState(() {
+                          videoAssetPath = null;
+                          loadingMessage = 'Invalid Selection'; // Display "Invalid Selection" message
+                        });
                       }
                     }
                   },
@@ -169,19 +196,39 @@ class _LocationState extends State<Location> {
                 ),
 
                 SizedBox(height: 16.0),
-                if (videoAssetPath != null)
+
+                if (loadingMessage != null && submitted ) // Display loading message if not null
                   Text(
-                    'Video Asset Path: $videoAssetPath',
+                    loadingMessage!,
+                    style: TextStyle(fontSize: 16,color: Colors.white),
+                  ),
+
+                if (videoAssetPath != null&& selectedFrom == null && selectedTo == null)
+                  Text(
+                    'Got the video',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.cyan,
+                      color: Colors.white,
                     ),
                   ),
-                if (videoAssetPath == null)
-                  Text(
-                    'No video found for the selected destinations.',
-                    style: TextStyle(fontSize: 16),
+
+
+                SizedBox(
+                  height: 20.0,
+                ),
+
+                Stack(
+                  children:[
+                  Positioned(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        SystemNavigator.pop();
+                      },
+                      child: Icon(Icons.exit_to_app),
+                    ),
                   ),
+                  ]
+                ),
               ],
             ),
           ),

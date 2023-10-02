@@ -1,6 +1,9 @@
 import 'dart:io';
-import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:audioplayers/audioplayers.dart';
+//import 'package:muza/Pages/SongModel.dart'; // Use your local SongModel class
+import 'package:muza/Pages/MusicPlayerPage.dart';
 
 
 class MusicListPage extends StatefulWidget {
@@ -11,17 +14,15 @@ class MusicListPage extends StatefulWidget {
 class _MusicListPageState extends State<MusicListPage> {
   List<File> musicFiles = [];
 
-
-  @override
   final OnAudioQuery _audioQuery = OnAudioQuery();
 
-  // Indicate if application has permission to the library.
+  // Indicate if the application has permission to the library.
   bool _hasPermission = false;
 
   @override
   void initState() {
     super.initState();
-    // (Optinal) Set logging level. By default will be set to 'WARN'.
+    // (Optional) Set logging level. By default, it will be set to 'WARN'.
     //
     // Log will appear on:
     //  * XCode: Debug Console
@@ -40,19 +41,19 @@ class _MusicListPageState extends State<MusicListPage> {
       retryRequest: retry,
     );
 
-    // Only call update the UI if application has all required permissions.
-    _hasPermission ? setState(() {}) : null;
+    // Only update the UI if the application has all required permissions.
+    if (_hasPermission) {
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: Center(
         child: !_hasPermission
             ? noAccessToLibraryWidget()
             : FutureBuilder<List<SongModel>>(
-          // Default values:
           future: _audioQuery.querySongs(
             sortType: null,
             orderType: OrderType.ASC_OR_SMALLER,
@@ -60,33 +61,36 @@ class _MusicListPageState extends State<MusicListPage> {
             ignoreCase: true,
           ),
           builder: (context, item) {
-            // Display error, if any.
             if (item.hasError) {
               return Text(item.error.toString());
             }
 
-            // Waiting content.
             if (item.data == null) {
               return const CircularProgressIndicator();
             }
 
-            // 'Library' is empty.
             if (item.data!.isEmpty) return const Text("Nothing found!");
 
-            // You can use [item.data!] direct or you can create a:
-            // List<SongModel> songs = item.data!;
             return ListView.builder(
               itemCount: item.data!.length,
               itemBuilder: (context, index) {
+                final song = item.data![index];
+
                 return ListTile(
-                  title: Text(item.data![index].title),
-                  subtitle: Text(item.data![index].artist ?? "No Artist"),
+                  title: Text(song.title),
+                  subtitle: Text(song.artist ?? "No Artist"),
                   trailing: const Icon(Icons.more_vert),
-                  // This Widget will query/load image.
-                  // You can use/create your own widget/method using [queryArtwork].
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MusicPlayerPage(song: song),
+                      ),
+                    );
+                  },
                   leading: QueryArtworkWidget(
                     controller: _audioQuery,
-                    id: item.data![index].id,
+                    id: song.id,
                     type: ArtworkType.AUDIO,
                   ),
                 );
